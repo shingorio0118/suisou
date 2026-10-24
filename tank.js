@@ -223,7 +223,7 @@ function spawn(kind) {
   o.legs = g.querySelector(".legs");
   o.ant = g.querySelector(".ant");
   if (kind === "neon") {
-    o.y = rnd(40, 150); o.sp = rnd(28, 50); o.vx = o.face * o.sp * .4; o.vy = rnd(-5, 5);
+    o.y = rnd(40, 150); o.sp = rnd(17, 30); o.vx = o.face * o.sp * .4; o.vy = rnd(-5, 5);
     o.dart = 0; o.pause = 0; pickWander(o);
   } else if (kind === "shrimp" || kind === "cory") {
     o.sp = kind === "cory" ? rnd(14, 20) : rnd(7, 11);
@@ -394,7 +394,7 @@ function stepNeon(o, dt, sp, canEat, flock) {
   else if (o.dart > 0) { o.dart -= dt; }
   else if (!canEat || !nearest(o, false, 80)) {
     if (Math.random() < dt * .08) o.pause = rnd(.3, 1.1);
-    else if (Math.random() < dt * .12) { o.dart = rnd(.25, .55); const a = rnd(0, Math.PI * 2); o.vx += Math.cos(a) * 70; o.vy += Math.sin(a) * 40; }
+    else if (Math.random() < dt * .12) { o.dart = rnd(.25, .55); const a = rnd(0, Math.PI * 2); o.vx += Math.cos(a) * 40; o.vy += Math.sin(a) * 24; }
   }
 
   const f = canEat ? nearest(o, false) : null;
