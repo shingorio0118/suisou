@@ -63,24 +63,35 @@ const tank = $("tank"), R = seeded(20261020), itemEls = {}, bbox = {};
   });
 }
 
-const STEMS = [[22, .95], [38, 1], [54, .9], [70, 1.05], [86, .85], [102, .75], [30, .7], [62, .8]];
-const CLUSTERS = { p0: [0, 1, 2, 6], p1: [3, 4, 5, 7] };
+/* anubias nana clumps (low, thick dark-green leaves on short stalks, creeping rhizome) */
+const NANA = {
+  p0: { x: 150, leaves: [[-22, -18, 20, 0], [-8, -25, 30, 1], [7, -26, 14, 0], [21, -20, 28, 1], [-1, -14, 24, 1]] },
+  p1: { x: 285, leaves: [[-21, -17, 18, 1], [-6, -25, 28, 0], [9, -25, 16, 1], [23, -18, 26, 0], [1, -13, 20, 1]] }
+};
+function nanaLeaf(g, bx, by, tx, ty, sc, young, i) {
+  // petiole (stalk) from the rhizome to the leaf base
+  E("path", { d: `M${bx} ${by} Q${(bx + tx) / 2 + (i % 2 ? 1.5 : -1.5)} ${(by + ty) / 2 + 2} ${tx} ${ty}`, stroke: young ? "#4f9a40" : "#2c6a30", "stroke-width": 1.5, fill: "none", "stroke-linecap": "round" }, g);
+  const ang = Math.atan2(ty - by, tx - bx) * 180 / Math.PI + 90, L = 15 * sc, Wd = 8.6 * sc;
+  const lf = E("g", { transform: `translate(${tx} ${ty}) rotate(${ang.toFixed(1)}) scale(${(L / 15).toFixed(2)})` }, g);
+  // broad, thick, slightly pointed oval leaf
+  const d = "M0 0 C-9.5 -2 -10.5 -13 -.4 -19.5 C10 -13 9.5 -2 0 0Z";
+  E("path", { d, fill: young ? "url(#nanaY)" : "url(#nanaG)", stroke: young ? "#2c6a2c" : "#123a1a", "stroke-width": .8, "stroke-linejoin": "round" }, lf);
+  E("path", { d: "M0 -.5 L0 -17.5", stroke: young ? "#a9d88a" : "#5aa05a", "stroke-width": .55, opacity: .6 }, lf);
+  [[-3, -5], [-4, -10], [3, -5], [4, -10]].forEach(([vx, vy]) => E("path", { d: `M0 ${vy} L${vx * 1.9} ${vy - 3.2}`, stroke: "#bfe6a2", "stroke-width": .25, opacity: .3, fill: "none" }, lf));
+  E("ellipse", { cx: -3.2, cy: -12, rx: 1.4, ry: 4.2, fill: "#fff", opacity: .12, transform: "rotate(-12 -3.2 -12)" }, lf);
+}
 for (const k of ["p0", "p1"]) {
   const it = E("g", { class: "item hygro", "data-item": k }, $("plants")); itemEls[k] = it;
   const hit = E("rect", { fill: "transparent" }, it);
-  CLUSTERS[k].forEach(i => {
-    const [x, kk] = STEMS[i], g = E("g", {}, it);
-    g.style.transformOrigin = x + "px 205px";
-    g.style.animation = `sway ${3.2 + (i % 3) * .7}s ease-in-out ${-i * 1.1}s infinite alternate`;
-    E("path", { d: `M${x} 205 Q${x + 5} 140 ${x - 1} ${205 - 150 * kk}`, stroke: "#2f6e32", "stroke-width": 2.2, fill: "none", "stroke-linecap": "round" }, g);
-    for (let y = 200, n = 0; y > 205 - 150 * kk; y -= 10, n++) {
-      const top = y < 120, fill = top ? "url(#leafR)" : "url(#leafG)";
-      const rx = 7.5 + (n % 3) * .4, ry = 3.2;
-      E("ellipse", { cx: x - 7.5, cy: y, rx, ry, fill, stroke: top ? "#a84850" : "#2e7a28", "stroke-width": .35, opacity: .95, transform: `rotate(${-28 + (n % 2)} ${x - 7.5} ${y})` }, g);
-      E("ellipse", { cx: x + 7.5, cy: y - 5, rx, ry, fill, stroke: top ? "#a84850" : "#2e7a28", "stroke-width": .35, opacity: .92, transform: `rotate(${26 - (n % 2)} ${x + 7.5} ${y - 5})` }, g);
-      // midrib
-      E("line", { x1: x - 3, y1: y, x2: x - 11, y2: y - .5, stroke: "#fff", "stroke-width": .3, opacity: .25 }, g);
-    }
+  const { x: cx, leaves } = NANA[k], by0 = sandY(cx) + 2;
+  // rhizome and roots
+  E("path", { d: `M${cx - 24} ${by0 + 1} Q${cx} ${by0 - 3} ${cx + 28} ${by0 + 1}`, stroke: "#5a3c24", "stroke-width": 3.2, fill: "none", "stroke-linecap": "round" }, it);
+  for (let i = 0; i < 7; i++) { const rx = cx - 22 + i * 7.5 + (i % 2) * 2; E("path", { d: `M${rx} ${by0} q${i % 2 ? 3 : -3} 5 ${i % 2 ? 1 : -2} 9`, stroke: "#8a6a4a", "stroke-width": .6, fill: "none", opacity: .8 }, it); }
+  leaves.forEach(([dx, dy, , young], i) => {
+    const bx = cx + dx * .55, by = sandY(bx) + 1, g = E("g", {}, it);
+    g.style.transformOrigin = bx + "px " + by + "px";
+    g.style.animation = `sway ${3.6 + (i % 3) * .8}s ease-in-out ${-i * 1.3}s infinite alternate`;
+    nanaLeaf(g, bx, by, cx + dx, sandY(cx) + dy, 1.25 + (i % 3) * .1, young, i);
   });
   const b = it.getBBox(); Object.entries({ x: b.x, y: b.y, width: b.width, height: b.height }).forEach(([a, v]) => hit.setAttribute(a, v));
 }
@@ -120,12 +131,7 @@ function lavaStone(g, cx, cy, r) {
   const it = E("g", { class: "item rock", "data-item": "r0" }, $("rocks")); itemEls.r0 = it;
   const g = E("g", {}, it);
   LAVA.forEach(([x, y, r]) => lavaStone(g, x, y, r));
-  const att = E("g", { class: "att" }, it), ax = 66, ay = 158;
-  // anubias — heartier leaf shapes with gradient
-  [[-14, -10, -32, 10, 5.5], [0, -17, 2, 11, 6], [13, -10, 28, 10, 5.5], [-7, -3, -58, 8, 4.5], [8, -3, 52, 8, 4.5]].forEach(([dx, dy, rot, rx, ry]) => {
-    E("ellipse", { cx: ax + dx, cy: ay + dy, rx, ry, fill: "url(#anubias)", stroke: "#163e1c", "stroke-width": .7, transform: `rotate(${rot} ${ax + dx} ${ay + dy})` }, att);
-    E("line", { x1: ax + dx, y1: ay + dy + ry * .6, x2: ax + dx * .3, y2: ay + 2, stroke: "#1a4a22", "stroke-width": .6, opacity: .7 }, att);
-  });
+  const att = E("g", { class: "att" }, it);
   // willow moss tufts
   [[51, 175, 9, 4], [97, 179, 7, 3], [40, 190, 9, 4], [87, 191, 9, 4], [110, 194, 6, 3]].forEach(([cx, cy, rx, ry]) => {
     for (let i = 0; i < 11; i++) {
